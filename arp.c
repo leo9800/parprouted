@@ -387,7 +387,7 @@ void *arp(char *ifname)
 	  k_arpreq.arp_flags = ATF_COM;
 	  if (option_arpperm)
 	      k_arpreq.arp_flags = k_arpreq.arp_flags | ATF_PERM;
-	  strncpy(k_arpreq.arp_dev, ifname, sizeof(k_arpreq.arp_dev));
+	  strncpy(k_arpreq.arp_dev, ifname, sizeof(k_arpreq.arp_dev) - 1);
 
 	  k_arpreq.arp_pa.sa_family = AF_INET;
 	  sin = (struct sockaddr_in *) &k_arpreq.arp_pa;
