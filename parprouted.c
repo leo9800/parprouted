@@ -356,13 +356,13 @@ void *main_thread()
 {
     time_t last_refresh;
 
-    signal(SIGINT, sighandler);
-    signal(SIGTERM, sighandler);
-    signal(SIGHUP, sighandler);
+    signal(SIGINT, (void *) sighandler);
+    signal(SIGTERM, (void *) sighandler);
+    signal(SIGHUP, (void *) sighandler);
     
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-    pthread_cleanup_push(cleanup, NULL);
+    pthread_cleanup_push((void *) cleanup, NULL);
     while (1) {
 	if (perform_shutdown) {
 	    pthread_exit(0);
@@ -451,9 +451,9 @@ int main (int argc, char **argv)
     openlog(progname, LOG_PID | LOG_CONS | LOG_PERROR, LOG_DAEMON);
     syslog(LOG_INFO, "Starting.");
 
-    signal(SIGINT, sighandler);
-    signal(SIGTERM, sighandler);
-    signal(SIGHUP, sighandler);
+    signal(SIGINT, (void *) sighandler);
+    signal(SIGTERM, (void *) sighandler);
+    signal(SIGHUP, (void *) sighandler);
 
     if ((arptab = (ARPTAB_ENTRY **) malloc(sizeof(ARPTAB_ENTRY **))) == NULL) {
 	    errstr = strerror(errno);
@@ -465,7 +465,7 @@ int main (int argc, char **argv)
     pthread_mutex_init(&arptab_mutex, NULL);
     pthread_mutex_init(&req_queue_mutex, NULL);
     
-    if (pthread_create(&my_threads[++last_thread_idx], NULL, main_thread, NULL)) {
+    if (pthread_create(&my_threads[++last_thread_idx], NULL, (void *) main_thread, NULL)) {
 	syslog(LOG_ERR, "Error creating main thread.");
 	abort();
     }
