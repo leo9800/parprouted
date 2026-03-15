@@ -69,10 +69,8 @@ ARPTAB_ENTRY * replace_entry(struct in_addr ipaddr, char *dev)
 int findentry(struct in_addr ipaddr)
 {
     ARPTAB_ENTRY * cur_entry=*arptab;
-    ARPTAB_ENTRY * prev_entry=NULL;
         
     while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
-	prev_entry = cur_entry;
 	cur_entry = cur_entry->next;
     };
     
@@ -219,7 +217,7 @@ void parseproc()
     struct in_addr ipaddr;
     int incomplete=0;
     int i;
-    char *ip, *mac, *dev, *hw, *flags, *mask;
+    char *ip, *mac, *dev;
     
     /* Parse /proc/net/arp table */
         
@@ -268,16 +266,16 @@ void parseproc()
 	    }
 
 	    /* Hardware type */
-	    hw=strtok(NULL, " "); 
+	    strtok(NULL, " "); 
 	    
 	    /* flags */
-	    flags=strtok(NULL, " "); 
+	    strtok(NULL, " "); 
 
 	    /* MAC address */	    
 	    mac=strtok(NULL, " ");
 
 	    /* Mask */
-	    mask=strtok(NULL, " "); 
+	    strtok(NULL, " "); 
 
 	    /* Device */
 	    dev=strtok(NULL, " ");

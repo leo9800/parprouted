@@ -87,7 +87,6 @@ int arp_recv(int sock, ether_arp_frame *frame)
 
 void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) 
 {
-  struct ether_arp *arp = &reqframe->arp;
   unsigned char ip[4];
   int sock;
 
@@ -98,24 +97,23 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs)
     abort();
   }
 
-  memcpy(&reqframe->ether_hdr.ether_dhost, &arp->arp_sha, ETH_ALEN);
+  memcpy(&reqframe->ether_hdr.ether_dhost, reqframe->arp.arp_sha, ETH_ALEN);
   memcpy(&reqframe->ether_hdr.ether_shost, ifs->sll_addr, ETH_ALEN);
 
-  memcpy(&arp->arp_tha, &arp->arp_sha, ETH_ALEN);
-  memcpy(&arp->arp_sha, ifs->sll_addr, ETH_ALEN);
+  memcpy(reqframe->arp.arp_tha, reqframe->arp.arp_sha, ETH_ALEN);
+  memcpy(reqframe->arp.arp_sha, ifs->sll_addr, ETH_ALEN);
 
-  memcpy(ip, &arp->arp_spa, 4);
-  memcpy(&arp->arp_spa, &arp->arp_tpa, 4);
-  memcpy(&arp->arp_tpa, ip, 4);
+  memcpy(ip, reqframe->arp.arp_spa, 4);
+  memcpy(reqframe->arp.arp_tpa, ip, 4);
 
-  arp->arp_op = htons(ARPOP_REPLY);
+  reqframe->arp.arp_op = htons(ARPOP_REPLY);
 
   if (debug) {
     struct in_addr sia;
     struct in_addr dia;
     
-    sia.s_addr = *((long *)arp->arp_spa);
-    dia.s_addr = *((long *)arp->arp_tpa);
+    sia.s_addr = *((long *)reqframe->arp.arp_spa);
+    dia.s_addr = *((long *)reqframe->arp.arp_tpa);
 
     printf("Replying to %s faking %s\n", inet_ntoa(sia), inet_ntoa(dia));
   }
@@ -131,7 +129,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs)
 void arp_req(char *ifname, struct in_addr remaddr, int gratuitous)
 {
   ether_arp_frame frame;
-  struct ether_arp *arp = &frame.arp;
+  // struct ether_arp *arp = &frame.arp;
   int sock;
   struct sockaddr_ll ifs;
   struct ifreq ifr;
@@ -179,20 +177,20 @@ void arp_req(char *ifname, struct in_addr remaddr, int gratuitous)
   memcpy(&frame.ether_hdr.ether_shost, ifs.sll_addr, ETH_ALEN);
   frame.ether_hdr.ether_type = htons(ETHERTYPE_ARP);
 
-  arp->arp_hrd = htons(ARPHRD_ETHER);
-  arp->arp_pro = htons(ETH_P_IP);
-  arp->arp_hln = 6;
-  arp->arp_pln = 4;
-  memset(&arp->arp_tha, 0, ETH_ALEN);
-  memcpy(&arp->arp_sha, ifs.sll_addr, ETH_ALEN);
+  frame.arp.arp_hrd = htons(ARPHRD_ETHER);
+  frame.arp.arp_pro = htons(ETH_P_IP);
+  frame.arp.arp_hln = 6;
+  frame.arp.arp_pln = 4;
+  memset(frame.arp.arp_tha, 0, ETH_ALEN);
+  memcpy(frame.arp.arp_sha, ifs.sll_addr, ETH_ALEN);
 
-  memcpy(&arp->arp_tpa, &remaddr.s_addr, 4);
+  memcpy(frame.arp.arp_tpa, &remaddr.s_addr, 4);
   if (gratuitous)
-    memcpy(&arp->arp_spa, &remaddr.s_addr, 4);
+    memcpy(frame.arp.arp_spa, &remaddr.s_addr, 4);
   else
-    memcpy(&arp->arp_spa, &ifaddr, 4);
+    memcpy(frame.arp.arp_spa, &ifaddr, 4);
 
-  arp->arp_op = htons(ARPOP_REQUEST);
+  frame.arp.arp_op = htons(ARPOP_REQUEST);
 
   if (debug) 
       printf("Sending ARP request for %s to %s\n", inet_ntoa(remaddr), ifname);
